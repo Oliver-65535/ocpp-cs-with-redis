@@ -1,7 +1,7 @@
-FROM python:3-stretch
+FROM python:3.10.12-bookworm
 WORKDIR /app
 COPY . /app
 RUN pip install -U pip
 RUN pip install -r requirements.txt
-EXPOSE 8010
-CMD ["python", "server.py"]
+EXPOSE 11180
+CMD ["python", "main.py"]
