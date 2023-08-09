@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-
+import time
 from ocpp.routing import on
 from ocpp.v16 import ChargePoint as cp
 from ocpp.v16 import call_result
@@ -15,11 +15,18 @@ class ChargePoint(cp):
     async def on_boot_notification(
         self, charge_point_vendor: str, charge_point_model: str, **kwargs
     ):
-        payload_dict = {
-            charge_point_vendor: charge_point_vendor,
-            charge_point_model: charge_point_model
+        payload = {
+            'chargePointId': self.id,
+            'action': 'event',
+            'actionId': None,
+            'method': Action.BootNotification,
+            'params': {
+                'chargePointVendor': charge_point_vendor,
+                'chargePointModel': charge_point_model
+            }
+
         }
-        await publish_redis_message(payload_dict)
+        await publish_redis_message(payload)
         # await redis.publish(channel,message)
         return call_result.BootNotificationPayload(
             current_time=datetime.utcnow().isoformat(),
@@ -37,14 +44,26 @@ class ChargePoint(cp):
     async def on_heartbet(
         self, **kwargs
     ):
-        payload = {}
+        payload = {
+            'chargePointId': self.id,
+            'action': 'event',
+            'actionId': None,
+            'method': Action.Heartbeat,
+            'params': {}
+        }
         await publish_redis_message(payload)
         return call_result.HeartbeatPayload(
             current_time=datetime.utcnow().isoformat())
 
     @on(Action.Authorize)
     async def on_authorize(self, id_tag: any, **kwargs):
-        payload = {'idTag': id_tag}
+        payload = {
+            'chargePointId': self.id,
+            'action': 'event',
+            'actionId': None,
+            'method': Action.Authorize,
+            'params': {'idTag': id_tag}
+        }
         await publish_redis_message(payload)
         return call_result.AuthorizePayload(
             id_tag_info={
@@ -57,34 +76,45 @@ class ChargePoint(cp):
         self, connector_id: int, id_tag, meter_start, reservation_id, timestamp, **kwargs
     ):
         payload = {
-            'connectorId': connector_id,
-            'idTag': id_tag,
-            'meterStart': meter_start,
-            'reservationId': reservation_id,
-            'timestamp': timestamp,
+            'chargePointId': self.id,
+            'action': 'event',
+            'actionId': None,
+            'method': Action.StartTransaction,
+            'params': {
+                'connectorId': connector_id,
+                'idTag': id_tag,
+                'meterStart': meter_start,
+                'reservationId': reservation_id,
+                'timestamp': timestamp,
+            }
         }
         await publish_redis_message(payload)
         return call_result.StartTransactionPayload(
             id_tag_info={
                 'status': AuthorizationStatus.accepted
             },
-            transaction_id=connector_id
+            transaction_id=int(time.time_ns()/10000000)
         )
 
     @on(Action.StopTransaction)
     async def on_stop_transaction(
-        self, transaction_id: int, timestamp, meter_stop: int, id_tag: str, reason: str, transaction_data: any, **kwargs
+        self, transaction_id: int, timestamp, meter_stop: int, id_tag: str, **kwargs
     ):
         payload = {
-            'idTag': id_tag,
-            # 'meterStop':meter_stop,
-            'timestamp': timestamp,
-            'transactionId': transaction_id,
-            'reason': reason,
-            'transactionData': transaction_data,
+            'chargePointId': self.id,
+            'action': 'event',
+            'actionId': None,
+            'method': Action.StopTransaction,
+            'params': {
+                'idTag': id_tag,
+                'meterStop': meter_stop,
+                'timestamp': timestamp,
+                'transactionId': transaction_id,
+                **kwargs
+            }
         }
         await publish_redis_message(payload)
-        return call_result.StartTransactionPayload(
+        return call_result.StopTransactionPayload(
             id_tag_info={
                 'status': AuthorizationStatus.accepted
             }
@@ -95,9 +125,15 @@ class ChargePoint(cp):
         self, connector_id: int, transaction_id: int, meter_value, **kwargs
     ):
         payload = {
-            'connectorId': connector_id,
-            'transactionId': transaction_id,
-            'meterValue': meter_value
+            'chargePointId': self.id,
+            'action': 'event',
+            'actionId': None,
+            'method': Action.MeterValues,
+            'params': {
+                'connectorId': connector_id,
+                'transactionId': transaction_id,
+                'meterValue': meter_value
+            }
         }
 
         await publish_redis_message(payload)
@@ -108,14 +144,21 @@ class ChargePoint(cp):
         self, connector_id, error_code, info, status, timestamp, vendor_id, vendor_error_code, **kwargs
     ):
         payload = {
-            'connectorId': connector_id,
-            'errorCode': error_code,
-            'info': info,
-            'status': status,
-            'timestamp': timestamp,
-            'vendorId': vendor_id,
-            'vendorErrorCode': vendor_error_code
+            'chargePointId': self.id,
+            'action': 'event',
+            'actionId': None,
+            'method': Action.StatusNotification,
+            'params': {
+                'connectorId': connector_id,
+                'errorCode': error_code,
+                'info': info,
+                'status': status,
+                'timestamp': timestamp,
+                'vendorId': vendor_id,
+                'vendorErrorCode': vendor_error_code
+            }
         }
+
         await publish_redis_message(payload)
         return call_result.StatusNotificationPayload()
 
