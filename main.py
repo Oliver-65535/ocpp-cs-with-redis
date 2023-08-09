@@ -84,7 +84,8 @@ async def on_connect(websocket, path):
 
         return await websocket.close()
    
-    charge_point_id = path.strip("/")
+    # charge_point_id = path.strip("/")
+    charge_point_id = path.rsplit('/', 1)[-1]
     # CONNECTIONS[websocket] = {"charge_point_id": charge_point_id}
     CHARGE_POINTS[charge_point_id] = ChargePoint(charge_point_id, websocket)
     print(charge_point_id)
