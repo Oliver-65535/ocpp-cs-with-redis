@@ -16,8 +16,6 @@ except ModuleNotFoundError:
     sys.exit(1)
 
 from ocppcs.redis import redis, channel
-import time
-from promisio import promisify
 from ocppcs.call import get_call_payload,get_call_result
 
 # from ocpp.routing import on
