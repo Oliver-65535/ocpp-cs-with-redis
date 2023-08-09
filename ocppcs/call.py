@@ -7,8 +7,9 @@ def get_call_payload(inp):
     print("@@@@@@@@@@@@@@@@@@@@@@@@@@", 'params' in inp.keys())
     if 'params' in inp.keys():
         params = inp["params"]
+    method=inp['method']
 
-    match inp['method']:
+    match method:
         case Action.RemoteStartTransaction:
             return call.RemoteStartTransactionPayload(
                 connector_id=params['connectorId'],
