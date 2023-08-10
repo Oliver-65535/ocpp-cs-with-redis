@@ -8,6 +8,7 @@ from ocpp.v16.enums import Action, RegistrationStatus, AuthorizationStatus
 
 # from main import redis, channel
 from ocppcs.redis import redis, channel
+from utils.varcaseconverter import snake_to_camel_case
 
 
 class ChargePoint(cp):
@@ -84,8 +85,8 @@ class ChargePoint(cp):
                 'connectorId': connector_id,
                 'idTag': id_tag,
                 'meterStart': meter_start,
-                'reservationId': reservation_id,
                 'timestamp': timestamp,
+                **snake_to_camel_case(kwargs)
             }
         }
         await publish_redis_message(payload)
@@ -98,7 +99,7 @@ class ChargePoint(cp):
 
     @on(Action.StopTransaction)
     async def on_stop_transaction(
-        self, transaction_id: int, timestamp, meter_stop: int, id_tag: str, **kwargs
+        self, transaction_id: int, timestamp: str, meter_stop: int, **kwargs
     ):
         payload = {
             'chargePointId': self.id,
@@ -106,11 +107,10 @@ class ChargePoint(cp):
             'actionId': None,
             'method': Action.StopTransaction,
             'params': {
-                'idTag': id_tag,
                 'meterStop': meter_stop,
                 'timestamp': timestamp,
                 'transactionId': transaction_id,
-                **kwargs
+                **snake_to_camel_case(kwargs)
             }
         }
         await publish_redis_message(payload)
@@ -122,7 +122,7 @@ class ChargePoint(cp):
 
     @on(Action.MeterValues)
     async def on_meter_values(
-        self, connector_id: int, transaction_id: int, meter_value, **kwargs
+        self, connector_id: int, meter_value: list, **kwargs
     ):
         payload = {
             'chargePointId': self.id,
@@ -131,8 +131,8 @@ class ChargePoint(cp):
             'method': Action.MeterValues,
             'params': {
                 'connectorId': connector_id,
-                'transactionId': transaction_id,
-                'meterValue': meter_value
+                'meterValue': meter_value,
+                **snake_to_camel_case(kwargs)
             }
         }
 
@@ -141,8 +141,9 @@ class ChargePoint(cp):
 
     @on(Action.StatusNotification)
     async def on_status_notification(
-        self, connector_id, error_code, info, status, timestamp, vendor_id, vendor_error_code, **kwargs
+        self, connector_id, error_code, status, **kwargs
     ):
+
         payload = {
             'chargePointId': self.id,
             'action': 'event',
@@ -150,17 +151,37 @@ class ChargePoint(cp):
             'method': Action.StatusNotification,
             'params': {
                 'connectorId': connector_id,
-                'errorCode': error_code,
-                'info': info,
                 'status': status,
-                'timestamp': timestamp,
-                'vendorId': vendor_id,
-                'vendorErrorCode': vendor_error_code
+                'errorCode': error_code,
+                **snake_to_camel_case(kwargs)
             }
         }
+        print('kwargs', kwargs)
 
         await publish_redis_message(payload)
         return call_result.StatusNotificationPayload()
+
+    @on(Action.DataTransfer)
+    async def on_data_transfer(
+        self, vendor_id: str, **kwargs
+    ):
+
+        payload = {
+            'chargePointId': self.id,
+            'action': 'event',
+            'actionId': None,
+            'method': Action.DataTransfer,
+            'params': {
+                'vendorId': vendor_id,
+                **snake_to_camel_case(kwargs)
+            }
+        }
+        await publish_redis_message(payload)
+        return call_result.StopTransactionPayload(
+            id_tag_info={
+                'status': AuthorizationStatus.accepted
+            }
+        )
 
 
 async def publish_redis_message(payload):
