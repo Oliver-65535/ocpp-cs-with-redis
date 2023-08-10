@@ -75,7 +75,8 @@ class ChargePoint(cp):
     @on(Action.StartTransaction)
     async def on_start_transaction(
         self, connector_id: int, id_tag, meter_start, reservation_id, timestamp, **kwargs
-    ):
+    ):  
+        transaction_id=int(time.time_ns()/10000000)
         payload = {
             'chargePointId': self.id,
             'action': 'event',
@@ -86,6 +87,7 @@ class ChargePoint(cp):
                 'idTag': id_tag,
                 'meterStart': meter_start,
                 'timestamp': timestamp,
+                'transactionId':transaction_id,
                 **snake_to_camel_case(kwargs)
             }
         }
@@ -94,7 +96,7 @@ class ChargePoint(cp):
             id_tag_info={
                 'status': AuthorizationStatus.accepted
             },
-            transaction_id=int(time.time_ns()/10000000)
+            transaction_id=transaction_id
         )
 
     @on(Action.StopTransaction)
