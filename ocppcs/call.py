@@ -16,11 +16,11 @@ def get_call_payload(inp):
             )
         case Action.GetConfiguration:
             return call.GetConfigurationPayload(
-                key=params['key']
+                key=[params['key']]
             )
         case Action.ChangeConfiguration:
             return call.ChangeConfigurationPayload(
-                key=[params['key']],
+                key=params['key'],
                 value=params['value'],
             )
         case Action.RemoteStartTransaction:
@@ -84,7 +84,6 @@ def get_call_result(response, method):
 
     match method:
         case Action.ChangeAvailability:
-            call_result.ChangeAvailabilityPayload()
             return {'status': response.status}
         case Action.RemoteStartTransaction:
             return {'status': response.status}
