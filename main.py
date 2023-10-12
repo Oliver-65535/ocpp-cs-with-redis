@@ -2,8 +2,12 @@ import json
 # import redis
 import asyncio
 import logging
-
+from aiohttp import web
+from aiohttp.web import Response
 from ocppcs.handler import ChargePoint
+from aiohttp_sse import sse_response
+import json
+
 try:
     import websockets
 except ModuleNotFoundError:
@@ -37,7 +41,7 @@ logging.basicConfig(level=logging.INFO)
 # pubsub.subscribe(channel)
 
 pubsub=''
-
+sse_data = []
 CHARGE_POINTS = {}
 
 # async def handler(websocket,path):
@@ -134,18 +138,83 @@ async def process_events():
         if len(payload) > 0 and type(event_data)is dict and 'data' in event_data.keys():
             data = event_data['data']
             if data['action']=='request':
+                asyncio.create_task(hello(data))
                 asyncio.create_task(async_call(event_data['data']))
-            
 
+async def hello(request):
+    async with sse_response(request) as resp:
+            # data = 'Server Time : {}'
+            print(request)
+            await resp.send(json.dumps("sd"))             
+
+async def index(request):
+    d = """
+        <html>
+        <body>
+            <script>
+                var evtSource = new EventSource("/sse");
+                evtSource.onmessage = function(e) {
+                    document.getElementById('response').innerText = e.data
+                }
+            </script>
+            <h1>Response from server:</h1>
+            <div id="response"></div>
+        </body>
+    </html>
+    """
+    return Response(text=d, content_type='text/html')
+
+async def start_site(address='localhost', port=8080):
+    app = web.Application()
+    app["data"] = set()
+    app.router.add_route('GET', '/sse', hello)
+    app.router.add_route('GET', '/handle', handle)
+    app.router.add_route('GET', '/', index)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, address, port)
+    await site.start()
 
 async def main():
-    async with await websockets.serve(
-        on_connect, "0.0.0.0", 11180, subprotocols=["ocpp1.6"]
-    ):
-        await process_events()  # runs forever
+    server = await websockets.serve(
+        on_connect, "0.0.0.0", 9000, subprotocols=["ocpp1.6"]
+    )
+
+    logging.info("Server Started listening to new connections...")
+    await server.wait_closed()
+
+async def handle(request):
+    print ("handle trigger")
+    return Response(text='handle trigger', content_type='text/html')
 
 
-if __name__ == "__main__":
-    asyncio.run(main())
+loop = asyncio.get_event_loop()
+
+loop.create_task(main())
+loop.create_task(start_site())
+loop.create_task(process_events())
+
+try:
+    loop.run_forever()
+except:
+    pass
+finally:
+    loop.run_until_complete(main())
+    loop.run_until_complete(start_site())
+    loop.run_until_complete(process_events())
+
+
+
+
+# async def main():
+#     async with await websockets.serve(
+#         on_connect, "0.0.0.0", 11180, subprotocols=["ocpp1.6"]
+#     ):
+#         # await sse_redis()  # runs forever
+#         await process_events()  # runs forever
+
+
+# if __name__ == "__main__":
+#     asyncio.run(main())
 
 
