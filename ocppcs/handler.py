@@ -1,6 +1,7 @@
 import json
 from datetime import datetime
 import time
+import logging
 from ocpp.routing import on
 from ocpp.v16 import ChargePoint as cp
 from ocpp.v16 import call_result
@@ -65,12 +66,38 @@ class ChargePoint(cp):
             'method': Action.Authorize,
             'params': {'idTag': id_tag}
         }
-        await publish_redis_message(payload)
-        return call_result.AuthorizePayload(
+        # status = AuthorizationStatus.invalid
+        # try:
+        #     logging.info('%s is longer than {%s}' % (id_tag, type(id_tag)))
+        #     await publish_redis_message(payload)
+        #     decoded = json.loads(id_tag)
+        #     id = decoded.get('id')
+        #     logging.info("decoded idTag %s" % (id))
+        #     if (id>=0):
+        #         return call_result.AuthorizePayload(
+        #         id_tag_info={
+        #             'status': AuthorizationStatus.accepted
+        #         }
+        # )
+        # except:
+        #     logging.info("idTag JSON parse error!")
+
+
+        
+        # message = await publish_redis_message_cahnnel('python-event-ocpp-cs-channel',payload)
+        # logging.info('%s is longer than' % (message))        
+        if (id_tag == 'admin-654123654'):
+            return call_result.AuthorizePayload(
             id_tag_info={
                 'status': AuthorizationStatus.accepted
             }
-        )
+            )
+        else:
+            return call_result.AuthorizePayload(
+            id_tag_info={
+                'status': AuthorizationStatus.invalid
+            }
+            )
 
     @on(Action.StartTransaction)
     async def on_start_transaction(
@@ -190,3 +217,7 @@ async def publish_redis_message(payload):
     data = json.dumps(payload)
     await redis.publish(channel, data)
     return data
+
+async def publish_redis_message_cahnnel(channel,payload):
+    data = json.dumps(payload)
+    return await redis.publish(channel, data)
