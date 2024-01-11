@@ -86,7 +86,16 @@ class ChargePoint(cp):
         
         # message = await publish_redis_message_cahnnel('python-event-ocpp-cs-channel',payload)
         # logging.info('%s is longer than' % (message))        
-        if (id_tag == 'admin-654123654'):
+        splittag = id_tag.split('#')
+        # logging.info('%s' % (splittag))
+        if (id_tag == 'admin#654123654'):
+            return call_result.AuthorizePayload(
+            id_tag_info={
+                'status': AuthorizationStatus.accepted
+            }
+            )
+        elif (splittag[0]=='user' and int(splittag[1])>0):
+            # logging.info('%s............' % (splittag))
             return call_result.AuthorizePayload(
             id_tag_info={
                 'status': AuthorizationStatus.accepted
