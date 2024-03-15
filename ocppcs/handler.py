@@ -10,7 +10,7 @@ from ocpp.v16.enums import Action, RegistrationStatus, AuthorizationStatus
 # from main import redis, channel
 from ocppcs.redis import redis, channel
 from utils.varcaseconverter import snake_to_camel_case
-
+from ocppcs.db import db_start_transaction, db_stop_transaction
 
 class ChargePoint(cp):
     @on(Action.BootNotification)
@@ -53,6 +53,13 @@ class ChargePoint(cp):
             'method': Action.Heartbeat,
             'params': {}
         }
+        # transaction_id=await db_start_transaction(self.id, 1, "user#23", 0, 0, "2024-03-15T16:09:55.887Z")
+        # res=await db_stop_transaction("CP01", 32, 12, "2024-03-15T16:09:55.887Z")
+        # if res is None:
+        #     logging.info("NOt UPDATED")
+        # else:
+        #     logging.info("ALL UPDATED")   
+        # await db_start_transaction("werwerwer", 1, "wer", 1, 0, datetime.utcnow().isoformat())    
         await publish_redis_message(payload)
         return call_result.HeartbeatPayload(
             current_time=datetime.utcnow().isoformat())
@@ -112,7 +119,8 @@ class ChargePoint(cp):
     async def on_start_transaction(
         self, connector_id: int, id_tag, meter_start, reservation_id, timestamp, **kwargs
     ):  
-        transaction_id=int(time.time_ns()/10000000)
+        
+        transaction_id=await db_start_transaction(id, connector_id, id_tag, meter_start, reservation_id, timestamp)  
         payload = {
             'chargePointId': self.id,
             'action': 'event',
@@ -127,6 +135,7 @@ class ChargePoint(cp):
                 **snake_to_camel_case(kwargs)
             }
         }
+
         await publish_redis_message(payload)
         return call_result.StartTransactionPayload(
             id_tag_info={
@@ -151,12 +160,20 @@ class ChargePoint(cp):
                 **snake_to_camel_case(kwargs)
             }
         }
-        await publish_redis_message(payload)
-        return call_result.StopTransactionPayload(
-            id_tag_info={
-                'status': AuthorizationStatus.accepted
-            }
-        )
+        res=await db_stop_transaction(id, transaction_id, meter_stop, timestamp)
+        if res is None:
+            return call_result.StopTransactionPayload(
+                id_tag_info={
+                    'status': AuthorizationStatus.rejected
+                }
+            )
+        else:
+            await publish_redis_message(payload)
+            return call_result.StopTransactionPayload(
+                id_tag_info={
+                    'status': AuthorizationStatus.accepted
+                }
+            )
 
     @on(Action.MeterValues)
     async def on_meter_values(
@@ -220,7 +237,6 @@ class ChargePoint(cp):
                 'status': AuthorizationStatus.accepted
             }
         )
-
 
 async def publish_redis_message(payload):
     data = json.dumps(payload)

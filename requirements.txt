@@ -3,3 +3,4 @@ websockets
 aioredis
 ocpp
 pyhumps
+asyncpg

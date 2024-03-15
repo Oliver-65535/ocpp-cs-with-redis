@@ -37,6 +37,7 @@ logging.basicConfig(level=logging.INFO)
 # pubsub.subscribe(channel)
 
 pubsub=''
+connect_db=''
 
 CHARGE_POINTS = {}
 
@@ -143,6 +144,7 @@ async def main():
         on_connect, "0.0.0.0", 11180, subprotocols=["ocpp1.6"]
     ):
         await process_events()  # runs forever
+
 
 
 if __name__ == "__main__":
