@@ -120,7 +120,7 @@ class ChargePoint(cp):
         self, connector_id: int, id_tag, meter_start, reservation_id, timestamp, **kwargs
     ):  
         
-        transaction_id=await db_start_transaction(id, connector_id, id_tag, meter_start, reservation_id, timestamp)  
+        transaction_id=await db_start_transaction(self.id, connector_id, id_tag, meter_start, reservation_id, timestamp)  
         payload = {
             'chargePointId': self.id,
             'action': 'event',
@@ -160,7 +160,7 @@ class ChargePoint(cp):
                 **snake_to_camel_case(kwargs)
             }
         }
-        res=await db_stop_transaction(id, transaction_id, meter_stop, timestamp)
+        res=await db_stop_transaction(self.id, transaction_id, meter_stop, timestamp)
         if res is None:
             return call_result.StopTransactionPayload(
                 id_tag_info={
