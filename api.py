@@ -39,7 +39,7 @@ async def call_http(request):
     data = await request.json()
     response = await async_call(data)
     # print("ANSWER", json.dumps(response))
-    return web.json_response(json.dumps(response))
+    return web.json_response(response)
     # return Response(text=response, content_type='text/html')
 
 async def index(request):
@@ -63,7 +63,7 @@ async def ping(request):
     return web.Response(text="pong")
   
 async def get_data(request):
-    return web.json_response(json.dumps(list(CHARGE_POINTS.keys())))  
+    return web.json_response(list(CHARGE_POINTS.keys()))  
 
 async def pr(request) -> web.StreamResponse:
     return web.json_response(
