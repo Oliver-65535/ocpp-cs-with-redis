@@ -1,0 +1,1 @@
+CHARGE_POINTS={}

@@ -1,5 +1,7 @@
 asyncio
 websockets
-aioredis
 ocpp
-pyhumps
+humps
+swagger-ui-py
+aiohttp
+aiohttp_sse

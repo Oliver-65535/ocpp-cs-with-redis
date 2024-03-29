@@ -7,9 +7,10 @@ from ocpp.v16 import call_result
 from ocpp.v16.enums import Action, RegistrationStatus, AuthorizationStatus
 
 # from main import redis, channel
-from ocppcs.redis import redis, channel
+# from ocppcs.redis import redis, channel
 from utils.varcaseconverter import snake_to_camel_case
 
+from api import event 
 
 class ChargePoint(cp):
     @on(Action.BootNotification)
@@ -18,8 +19,8 @@ class ChargePoint(cp):
     ):
         payload = {
             'chargePointId': self.id,
-            'action': 'event',
-            'actionId': None,
+            # 'action': 'event',
+            # 'actionId': None,
             'method': Action.BootNotification,
             'params': {
                 'chargePointVendor': charge_point_vendor,
@@ -47,8 +48,8 @@ class ChargePoint(cp):
     ):
         payload = {
             'chargePointId': self.id,
-            'action': 'event',
-            'actionId': None,
+            # 'action': 'event',
+            # 'actionId': None,
             'method': Action.Heartbeat,
             'params': {}
         }
@@ -60,8 +61,8 @@ class ChargePoint(cp):
     async def on_authorize(self, id_tag: any, **kwargs):
         payload = {
             'chargePointId': self.id,
-            'action': 'event',
-            'actionId': None,
+            # 'action': 'event',
+            # 'actionId': None,
             'method': Action.Authorize,
             'params': {'idTag': id_tag}
         }
@@ -76,11 +77,11 @@ class ChargePoint(cp):
     async def on_start_transaction(
         self, connector_id: int, id_tag, meter_start, reservation_id, timestamp, **kwargs
     ):  
-        transaction_id=int(time.time_ns()/10000000)
+        transaction_id=1 #int(time.time_ns()/10000000)
         payload = {
             'chargePointId': self.id,
-            'action': 'event',
-            'actionId': None,
+            # 'action': 'event',
+            # 'actionId': None,
             'method': Action.StartTransaction,
             'params': {
                 'connectorId': connector_id,
@@ -105,8 +106,8 @@ class ChargePoint(cp):
     ):
         payload = {
             'chargePointId': self.id,
-            'action': 'event',
-            'actionId': None,
+            # 'action': 'event',
+            # 'actionId': None,
             'method': Action.StopTransaction,
             'params': {
                 'meterStop': meter_stop,
@@ -128,8 +129,8 @@ class ChargePoint(cp):
     ):
         payload = {
             'chargePointId': self.id,
-            'action': 'event',
-            'actionId': None,
+            # 'action': 'event',
+            # 'actionId': None,
             'method': Action.MeterValues,
             'params': {
                 'connectorId': connector_id,
@@ -148,8 +149,8 @@ class ChargePoint(cp):
 
         payload = {
             'chargePointId': self.id,
-            'action': 'event',
-            'actionId': None,
+            # 'action': 'event',
+            # 'actionId': None,
             'method': Action.StatusNotification,
             'params': {
                 'connectorId': connector_id,
@@ -170,8 +171,8 @@ class ChargePoint(cp):
 
         payload = {
             'chargePointId': self.id,
-            'action': 'event',
-            'actionId': None,
+            # 'action': 'event',
+            # 'actionId': None,
             'method': Action.DataTransfer,
             'params': {
                 'vendorId': vendor_id,
@@ -187,6 +188,6 @@ class ChargePoint(cp):
 
 
 async def publish_redis_message(payload):
-    data = json.dumps(payload)
-    await redis.publish(channel, data)
-    return data
+    # data = json.dumps(payload)
+    await event(payload)
+    # return data

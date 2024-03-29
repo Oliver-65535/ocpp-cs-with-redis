@@ -11,7 +11,7 @@ async def hello(request):
             data = 'Server Time : {}'.format(datetime.now())
             print(data)
             await resp.send(data)
-            await asyncio.sleep(0)
+            await asyncio.sleep(1)
 
 async def handle(request):
     print ("handle trigger")
