@@ -21,23 +21,20 @@ except ModuleNotFoundError:
 logging.basicConfig(level=logging.INFO)
 
 
-
-app = None
-
 async def on_connect(websocket, path):
     """For every new charge point that connects, create a ChargePoint
     instance and start listening for messages.
     """
     try:
         requested_protocols = websocket.request_headers["Sec-WebSocket-Protocol"]
-        charge_point_id = path.rsplit('/', 1)[-1]
     except websockets.exceptions.ConnectionClosedError:
             logging.info("Client disconnected.  Do cleanup")
     except KeyError:
         logging.error("Client hasn't requested any Subprotocol. Closing Connection")
         return await websocket.close()
     finally:
-        print("DISCONNECT", websocket)
+        disconnect()
+        # print("DISCONNECT", websocket)
         # del CHARGE_POINTS[charge_point_id]
         # await emit_charger_list(list(CHARGE_POINTS.keys()))
     if websocket.subprotocol:
@@ -55,8 +52,8 @@ async def on_connect(websocket, path):
 
         return await websocket.close()
    
-    # charge_point_id = path.strip("/")
-    
+
+    charge_point_id = path.rsplit('/', 1)[-1]
     # CONNECTIONS[websocket] = {"charge_point_id": charge_point_id}
     CHARGE_POINTS[charge_point_id] = ChargePoint(charge_point_id, websocket)
     print(charge_point_id)
@@ -69,9 +66,14 @@ async def on_connect(websocket, path):
     await event(payload)
     await CHARGE_POINTS[charge_point_id].start()
     
-
-
-
+def disconnect():
+    # del CHARGE_POINTS[charge_point_id]
+    payload = {
+            'method': 'diconnected',
+            'params': {'chargers':list(CHARGE_POINTS.keys())}
+        }
+    # await event(payload)
+    print(f"diconnected UUUUUUUUUUU:", list(CHARGE_POINTS.keys()))
 
 async def async_redis_publish(data):
     # await redis.publish(channel, data)

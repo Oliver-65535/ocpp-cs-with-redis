@@ -61,6 +61,9 @@ async def index(request):
 
 async def ping(request):
     return web.Response(text="pong")
+  
+async def get_data(request):
+    return web.json_response(json.dumps(list(CHARGE_POINTS.keys())))  
 
 async def pr(request) -> web.StreamResponse:
     return web.json_response(
@@ -208,6 +211,7 @@ async def start_site(address='0.0.0.0', port=3021):
     app.router.add_route('POST', '/api/call', call_http)
     app.router.add_route('GET', '/handle', handle)
     app.router.add_route('GET', "/api/ping", ping)
+    app.router.add_route('GET', "/api/get-data", get_data)
     app.router.add_route("GET", "/", chat)
     app.router.add_route("POST","/everyone", message)
     app.router.add_route("GET", "/subscribe", subscribe)
