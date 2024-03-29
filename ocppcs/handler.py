@@ -19,8 +19,6 @@ class ChargePoint(cp):
     ):
         payload = {
             'chargePointId': self.id,
-            # 'action': 'event',
-            # 'actionId': None,
             'method': Action.BootNotification,
             'params': {
                 'chargePointVendor': charge_point_vendor,
@@ -36,20 +34,12 @@ class ChargePoint(cp):
             status=RegistrationStatus.accepted,
         )
 
-    # @on("disconnect")
-    # async def on_disconnect(self):
-    #     # payload = {}
-    #     # await publish_redis_message( payload)
-    #     print("DISCONNECT")
-
     @on(Action.Heartbeat)
     async def on_heartbet(
         self, **kwargs
     ):
         payload = {
             'chargePointId': self.id,
-            # 'action': 'event',
-            # 'actionId': None,
             'method': Action.Heartbeat,
             'params': {}
         }
@@ -61,8 +51,6 @@ class ChargePoint(cp):
     async def on_authorize(self, id_tag: any, **kwargs):
         payload = {
             'chargePointId': self.id,
-            # 'action': 'event',
-            # 'actionId': None,
             'method': Action.Authorize,
             'params': {'idTag': id_tag}
         }
@@ -80,8 +68,6 @@ class ChargePoint(cp):
         transaction_id=1 #int(time.time_ns()/10000000)
         payload = {
             'chargePointId': self.id,
-            # 'action': 'event',
-            # 'actionId': None,
             'method': Action.StartTransaction,
             'params': {
                 'connectorId': connector_id,
@@ -106,8 +92,6 @@ class ChargePoint(cp):
     ):
         payload = {
             'chargePointId': self.id,
-            # 'action': 'event',
-            # 'actionId': None,
             'method': Action.StopTransaction,
             'params': {
                 'meterStop': meter_stop,
@@ -129,8 +113,6 @@ class ChargePoint(cp):
     ):
         payload = {
             'chargePointId': self.id,
-            # 'action': 'event',
-            # 'actionId': None,
             'method': Action.MeterValues,
             'params': {
                 'connectorId': connector_id,
@@ -149,8 +131,6 @@ class ChargePoint(cp):
 
         payload = {
             'chargePointId': self.id,
-            # 'action': 'event',
-            # 'actionId': None,
             'method': Action.StatusNotification,
             'params': {
                 'connectorId': connector_id,
@@ -171,8 +151,6 @@ class ChargePoint(cp):
 
         payload = {
             'chargePointId': self.id,
-            # 'action': 'event',
-            # 'actionId': None,
             'method': Action.DataTransfer,
             'params': {
                 'vendorId': vendor_id,

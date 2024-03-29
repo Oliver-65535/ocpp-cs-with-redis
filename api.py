@@ -34,15 +34,6 @@ async def async_call(event):
     params = get_call_result(response,event['method'])
     print(params)
     return params
-    # payload = {
-    #             'chargePointId': event['chargePointId'],
-    #             'action': 'response',
-    #             'actionId': event['actionId'],
-    #             'method': event['method'],
-    #             'params': params
-    #         }
-    # data = json.dumps(payload)
-    # asyncio.create_task(async_redis_publish(data))
 
 async def call_http(request):
     data = await request.json()
@@ -69,17 +60,6 @@ async def index(request):
     return Response(text=d, content_type='text/html')
 
 async def ping(request):
-    """
-    ---
-    description: This endpoint returns user which is defined though data definition during initialization.
-    tags:
-    - Users
-    produces:
-    - application/json
-    responses:
-        "200":
-            description: Successful operation, returns User object nested permisiion list
-    """
     return web.Response(text="pong")
 
 async def pr(request) -> web.StreamResponse:
@@ -89,18 +69,7 @@ async def pr(request) -> web.StreamResponse:
                     {"name": "Bill Doe", "id": "233242342342"},
                     {"name": "Mary Doe", "id": "2342342343222"},
                     {"name": "Alex Smith", "id": "234234234344"},
-                ],
-                "paging": {
-                    "cursors": {
-                        "before": "QVFIUjRtc2c5NEl0ajN",
-                        "after": "QVFIUlpFQWM0TmVuaDRad0dt",
-                    },
-                    "next": (
-                        "https://graph.facebook.com/v2.7/12345678901234567/"
-                        "friends?access_token=EAACEdEose0cB"
-                    ),
-                },
-                "summary": {"total_count": 3},
+                ]
             }
         )
 
