@@ -1,7 +1,7 @@
 from typing import Set
 from aiohttp import web
 from aiohttp.web import Response
-
+import aiohttp_cors
 from aiohttp_sse import EventSourceResponse, sse_response
 
 import asyncio
@@ -216,6 +216,18 @@ async def start_site(address='0.0.0.0', port=3021):
     app.router.add_route("POST","/everyone", message)
     app.router.add_route("GET", "/subscribe", subscribe)
     # app.router.add_route("GET", "/charger-list", subscribe_charger_list)
+    
+    cors = aiohttp_cors.setup(app, defaults={
+    "*": aiohttp_cors.ResourceOptions(
+          allow_credentials=True,
+          expose_headers="*",
+          allow_headers="*"
+      )
+    })
+
+    for route in list(app.router.routes()):
+      cors.add(route)
+    
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, address, port)

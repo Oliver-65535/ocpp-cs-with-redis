@@ -5,3 +5,4 @@ pyhumps
 swagger-ui-py
 aiohttp
 aiohttp_sse
+aiohttp_cors
