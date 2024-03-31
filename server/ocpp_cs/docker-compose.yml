@@ -1,0 +1,20 @@
+version: "3"
+services:
+  python-ocpp-cs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "11180:11180"
+      - "3021:3021"
+    restart: always
+  # redis:
+  #   image: redislabs/redismod
+  #   ports:
+  #     - 6379:6379
+  # redisinsight:
+  #   image: redislabs/redisinsight:latest
+  #   ports:
+  #     - "8001:8001"
+  #   volumes:
+  #     - ./Users/ajeetraina/data/redisinsight:/db
