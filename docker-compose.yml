@@ -7,5 +7,5 @@ services:
       context: .
       dockerfile: ./docker/pychat/Dockerfile
     ports:
-      - 11181:11181
-      - 3022:3022
+      - 11181:11180
+      - 3022:3021
